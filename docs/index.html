@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Diceware Passphrase Generator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #111;
+      color: #d4d4d4;
+      font-family: monospace;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding-top: 10vh;
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+
+    #wrapper {
+      width: 30rem;
+      max-width: 100%;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      margin-top: 3rem;
+    }
+
+    #grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 4rem;
+      opacity: 0.3;
+      transition: opacity 0.3s;
+    }
+
+    .row.settled {
+      opacity: 1;
+    }
+
+    .dice-group {
+      display: flex;
+      gap: 0.5rem;
+      width: 12rem;
+      flex-shrink: 0;
+    }
+
+    .die {
+      font-size: 4rem;
+      line-height: 1;
+      display: inline-block;
+      width: 3rem;
+      text-align: center;
+    }
+
+    .word {
+      font-size: 2.5rem;
+      letter-spacing: 0.04em;
+      color: #a0d0a0;
+      text-align: left;
+    }
+
+    #regen {
+      background: none;
+      border: 1px solid #555;
+      color: #d4d4d4;
+      font-family: inherit;
+      font-size: 1rem;
+      padding: 0.6rem 1.4rem;
+      cursor: pointer;
+      margin-left: -3.5rem;
+    }
+
+    #regen:hover {
+      border-color: #d4d4d4;
+    }
+
+    #regen:disabled {
+      opacity: 0.4;
+      cursor: default;
+      border-color: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="wrapper">
+    <div id="grid"></div>
+
+    <div class="controls">
+      <button id="regen">Regenerate</button>
+    </div>
+  </div>
+
+  <script src="lib/wordlist-short1.js"></script>
+  <script src="lib/diceware.js"></script>
+  <script>
+    var ONE = '\u2680';
+    var DICE = [ONE, '\u2681', '\u2682', '\u2683', '\u2684', '\u2685'];
+    var grid = document.getElementById('grid');
+    var regenBtn = document.getElementById('regen');
+    var animating = false;
+    var lastRolls = [];
+    var lastWords = [];
+
+    function buildGrid(wordCount) {
+      grid.textContent = '';
+      for (var i = 0; i < wordCount; i++) {
+        var row = document.createElement('div');
+        row.className = 'row';
+
+        var diceGroup = document.createElement('div');
+        diceGroup.className = 'dice-group';
+        for (var d = 0; d < 4; d++) {
+          var die = document.createElement('span');
+          die.className = 'die';
+          die.textContent = DICE[0];
+          diceGroup.appendChild(die);
+        }
+
+        var wordSpan = document.createElement('span');
+        wordSpan.className = 'word';
+
+        row.appendChild(diceGroup);
+        row.appendChild(wordSpan);
+        grid.appendChild(row);
+      }
+    }
+
+    function settleWord(row, diceEls, wordSpan, word) {
+      row.classList.add('settled');
+      wordSpan.textContent = word;
+    }
+
+    function animateDice(results) {
+      var rows = grid.querySelectorAll('.row');
+      var SETTLE_TIME = 600;
+      var STAGGER = 700;
+      var CYCLE_MS = 150;
+
+      animating = true;
+      regenBtn.disabled = true;
+
+      for (var r = 0; r < rows.length; r++) {
+        rows[r].classList.remove('settled');
+        rows[r].querySelector('.word').textContent = '';
+      }
+
+      for (var r = 0; r < results.length; r++) {
+        (function(rowIdx) {
+          var row = rows[rowIdx];
+          var diceEls = row.querySelectorAll('.die');
+          var wordSpan = row.querySelector('.word');
+          var target = results[rowIdx];
+
+          var startTime = performance.now() + rowIdx * STAGGER;
+          var lastCycle = 0;
+
+          function step(now) {
+            var elapsed = now - startTime;
+            if (elapsed < 0) {
+              if (now - lastCycle >= CYCLE_MS) {
+                lastCycle = now;
+                for (var d = 0; d < 4; d++) {
+                  diceEls[d].textContent = DICE[Math.floor(Math.random() * 6)];
+                }
+              }
+              requestAnimationFrame(step);
+              return;
+            }
+
+            var t = Math.min(elapsed / SETTLE_TIME, 1);
+            var spinChance = 1 - t;
+
+            if (now - lastCycle >= CYCLE_MS) {
+              lastCycle = now;
+              for (var d = 0; d < 4; d++) {
+                if (Math.random() < spinChance * spinChance) {
+                  diceEls[d].textContent = DICE[Math.floor(Math.random() * 6)];
+                } else {
+                  diceEls[d].textContent = DICE[target.dice[d] - 1];
+                }
+              }
+            }
+
+            if (t < 1) {
+              requestAnimationFrame(step);
+            } else {
+              for (var d = 0; d < 4; d++) {
+                diceEls[d].textContent = DICE[target.dice[d] - 1];
+              }
+              settleWord(row, diceEls, wordSpan, target.word);
+
+              if (rowIdx === results.length - 1) {
+                animating = false;
+                regenBtn.disabled = false;
+              }
+            }
+          }
+
+          requestAnimationFrame(step);
+        })(r);
+      }
+    }
+
+    function regenerate() {
+      if (animating) return;
+      var wc = 6;
+
+      if (lastRolls.length !== wc) {
+        buildGrid(wc);
+      }
+
+      lastRolls = generateDiceware(wc, WORDLIST_SHORT1);
+      lastWords = lastRolls;
+      animateDice(lastRolls);
+    }
+
+    buildGrid(6);
+    regenBtn.addEventListener('click', regenerate);
+    regenerate();
+  </script>
+</body>
+</html>
