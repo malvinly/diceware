@@ -34,6 +34,10 @@ entropy per word. They differ only in word characteristics, not strength.
 - 6 short words (~62 bits): strong enough to resist offline attacks on a well-hashed secret
 - 7 short words (~72 bits): beyond feasible brute-force
 
+## Live demo
+
+https://malvinly.github.io/diceware
+
 ## Security
 
 Words are chosen with a cryptographically secure RNG, sampled without modulo
@@ -41,6 +45,16 @@ bias: `RandomNumberGenerator` in the CLI and `crypto.getRandomValues` (with
 rejection sampling) on the website. Every word is drawn independently and
 uniformly, so the entropy figures above are exact. The website runs entirely in
 the browser and sends nothing over the network.
+
+## Changing the word count
+
+The website is fixed at 8 words from the `short1` list. To change it, edit `docs/index.html`: set `wc` in `regenerate()` to the desired count. To use a different list, swap the `lib/wordlist-*.js` script tag and the matching `WORDLIST_*` reference.
+
+`generateDiceware(wordCount, wordList)` in `docs/lib/diceware.js` takes both as parameters and derives the dice count from the list size.
+
+## Word lists
+
+Raw EFF files in `wordlist/` (tab-separated). Embedded into source and not read at runtime.
 
 ## CLI
 
@@ -52,17 +66,3 @@ dotnet run --project cli -- -w 8 -l large # 8 words, large list
 ```
 
 See [cli/README.md](cli/README.md) for options, examples, and build instructions.
-
-## Live demo
-
-https://malvinly.github.io/diceware
-
-## Changing the word count
-
-The website is fixed at 8 words from the `short1` list. To change it, edit `docs/index.html`: set `wc` in `regenerate()` to the desired count. To use a different list, swap the `lib/wordlist-*.js` script tag and the matching `WORDLIST_*` reference.
-
-`generateDiceware(wordCount, wordList)` in `docs/lib/diceware.js` takes both as parameters and derives the dice count from the list size.
-
-## Word lists
-
-Raw EFF files in `wordlist/` (tab-separated). Embedded into source and not read at runtime.
