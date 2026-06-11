@@ -1,6 +1,8 @@
 # Diceware
 
-A passphrase generator using the [EFF word lists](https://www.eff.org/deeplinks/2016/07/new-wordlists-random-passphrases). CLI tool and static website.
+A passphrase generator using the [EFF word lists](https://www.eff.org/deeplinks/2016/07/new-wordlists-random-passphrases).
+
+This repo contains two components: the static website (`docs/`) and a .NET CLI (`cli/`) — see [cli/README.md](cli/README.md).
 
 ## Entropy
 
@@ -8,11 +10,14 @@ A passphrase generator using the [EFF word lists](https://www.eff.org/deeplinks/
 entropy = log2(list_size) × word_count
 ```
 
-| List | Dice | Size | Bits/word |
-|------|------|------|-----------|
-| `short1` | 4 | 1,296 | ~10.34 |
-| `short2` | 4 | 1,296 | ~10.34 |
-| `large` | 5 | 7,776 | ~12.92 |
+| List | Dice | Size | Bits/word | Notes |
+|------|------|------|-----------|-------|
+| `short1` | 4 | 1,296 | ~10.34 | Short words (≤5 letters), fastest to type |
+| `short2` | 4 | 1,296 | ~10.34 | Unique 3-letter prefixes; autocomplete- and typo-friendly |
+| `large` | 5 | 7,776 | ~12.92 | Highest entropy per word |
+
+All three lists are published by the EFF. `short1` and `short2` carry the same
+entropy per word. They differ only in word characteristics, not strength.
 
 | Words | short (~10.34) | large (~12.92) |
 |------:|---------------:|---------------:|
@@ -26,30 +31,37 @@ entropy = log2(list_size) × word_count
 | 11 | 113.7 bits | 142.1 bits |
 | 12 | 124.1 bits | 155.0 bits |
 
-- 6 short words (~62 bits): stronger than any realistically memorable password
+- 6 short words (~62 bits): strong enough to resist offline attacks on a well-hashed secret
 - 7 short words (~72 bits): beyond feasible brute-force
+
+## Security
+
+Words are chosen with a cryptographically secure RNG, sampled without modulo
+bias: `RandomNumberGenerator` in the CLI and `crypto.getRandomValues` (with
+rejection sampling) on the website. Every word is drawn independently and
+uniformly, so the entropy figures above are exact. The website runs entirely in
+the browser and sends nothing over the network.
 
 ## CLI
 
-```
-Diceware [options]
-```
-
-| Option | Description |
-|--------|-------------|
-| `-w, --words` | Word count (1-20, default 8) |
-| `-l, --list` | Word list: `short1`, `short2`, `large` (default `short1`) |
-| `--no-colors` | Plain text output |
+A .NET command-line tool. Requires the [.NET 10 SDK](https://dotnet.microsoft.com/download).
 
 ```sh
-Diceware                      # 8 words, short1
-Diceware -w 8 -l large        # 8 words, large list
-Diceware -w 10 --no-colors    # 10 words, plain output
+dotnet run --project cli                  # 8 words, short1
+dotnet run --project cli -- -w 8 -l large # 8 words, large list
 ```
 
-## GitHub Pages
+See [cli/README.md](cli/README.md) for options, examples, and build instructions.
+
+## Live demo
 
 https://malvinly.github.io/diceware
+
+## Changing the word count
+
+The website is fixed at 8 words from the `short1` list. To change it, edit `docs/index.html`: set `wc` in `regenerate()` to the desired count. To use a different list, swap the `lib/wordlist-*.js` script tag and the matching `WORDLIST_*` reference.
+
+`generateDiceware(wordCount, wordList)` in `docs/lib/diceware.js` takes both as parameters and derives the dice count from the list size.
 
 ## Word lists
 
