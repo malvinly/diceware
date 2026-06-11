@@ -30,8 +30,7 @@ rootCommand.SetAction(parseResult =>
     if (wordCount < 1 || wordCount > 20)
     {
         Console.Error.WriteLine("Word count must be between 1 and 20.");
-        Environment.ExitCode = 1;
-        return;
+        return 1;
     }
 
     string[]? wordList = list?.ToLowerInvariant() switch
@@ -45,8 +44,7 @@ rootCommand.SetAction(parseResult =>
     if (wordList is null)
     {
         Console.Error.WriteLine("Word list must be short1, short2, or large.");
-        Environment.ExitCode = 1;
-        return;
+        return 1;
     }
 
     var words = new List<string>();
@@ -72,6 +70,8 @@ rootCommand.SetAction(parseResult =>
         }
         Console.WriteLine();
     }
+
+    return 0;
 });
 
 var parserConfig = new ParserConfiguration();

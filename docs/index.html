@@ -143,6 +143,7 @@
       var STAGGER = 350;
       var SETTLE_TIME = 400;
       var rightColumnStart = Math.floor((results.length - 1) / 2) * STAGGER + SETTLE_TIME;
+      var total = results.length;
       var settled = 0;
 
       animating = true;
@@ -169,7 +170,7 @@
             row.classList.add('settled');
             wordEl.textContent = word;
             settled++;
-            if (settled === rows.length) {
+            if (settled === total) {
               animating = false;
               regenBtn.disabled = false;
             }

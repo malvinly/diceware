@@ -10,8 +10,8 @@ function getRandomDiceFace() {
 
 function getRandomDiceValues(count) {
   var result = [];
+  var buf = new Uint8Array(count * 2);
   while (result.length < count) {
-    var buf = new Uint8Array(count * 2);
     crypto.getRandomValues(buf);
     for (var i = 0; i < buf.length && result.length < count; i++) {
       if (buf[i] < 252) result.push((buf[i] % 6) + 1);
