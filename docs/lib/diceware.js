@@ -9,11 +9,13 @@ function getRandomDiceFace() {
 }
 
 function getRandomDiceValues(count) {
-  var values = new Uint8Array(count);
-  crypto.getRandomValues(values);
   var result = [];
-  for (var i = 0; i < count; i++) {
-    result.push((values[i] % 6) + 1);
+  while (result.length < count) {
+    var buf = new Uint8Array(count * 2);
+    crypto.getRandomValues(buf);
+    for (var i = 0; i < buf.length && result.length < count; i++) {
+      if (buf[i] < 252) result.push((buf[i] % 6) + 1);
+    }
   }
   return result;
 }
@@ -27,9 +29,10 @@ function diceRollsToIndex(rolls) {
 }
 
 function generateDiceware(wordCount, wordList) {
+  var diceCount = Math.round(Math.log(wordList.length) / Math.log(6));
   var result = [];
   for (var w = 0; w < wordCount; w++) {
-    var dice = getRandomDiceValues(4);
+    var dice = getRandomDiceValues(diceCount);
     var index = diceRollsToIndex(dice);
     result.push({ dice: dice, word: wordList[index] });
   }

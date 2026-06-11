@@ -114,7 +114,7 @@
     var animating = false;
     var lastRolls = [];
 
-    function buildGrid(wordCount) {
+    function buildGrid(wordCount, diceCount) {
       grid.textContent = '';
       for (var i = 0; i < wordCount; i++) {
         var row = document.createElement('div');
@@ -122,7 +122,7 @@
 
         var diceGroup = document.createElement('div');
         diceGroup.className = 'dice-group';
-        for (var d = 0; d < 4; d++) {
+        for (var d = 0; d < diceCount; d++) {
           var die = document.createElement('span');
           die.className = 'die';
           die.textContent = DICE_FACES[0];
@@ -141,6 +141,8 @@
     function animateDice(results) {
       var rows = grid.querySelectorAll('.row');
       var STAGGER = 350;
+      var SETTLE_TIME = 400;
+      var rightColumnStart = Math.floor((results.length - 1) / 2) * STAGGER + SETTLE_TIME;
       var settled = 0;
 
       animating = true;
@@ -160,14 +162,14 @@
           if (idx % 2 === 0) {
             delay = (idx / 2) * STAGGER;
           } else {
-            delay = 1450 + Math.floor(idx / 2) * STAGGER;
+            delay = rightColumnStart + Math.floor(idx / 2) * STAGGER;
           }
 
           animateDiceRow(diceEls, wordSpan, results[idx], delay, function(wordEl, word) {
             row.classList.add('settled');
             wordEl.textContent = word;
             settled++;
-            if (settled === results.length) {
+            if (settled === rows.length) {
               animating = false;
               regenBtn.disabled = false;
             }
@@ -179,16 +181,17 @@
     function regenerate() {
       if (animating) return;
       var wc = 8;
+      var diceCount = Math.round(Math.log(WORDLIST_SHORT1.length) / Math.log(6));
 
       if (lastRolls.length !== wc) {
-        buildGrid(wc);
+        buildGrid(wc, diceCount);
       }
 
       lastRolls = generateDiceware(wc, WORDLIST_SHORT1);
       animateDice(lastRolls);
     }
 
-    buildGrid(8);
+    buildGrid(8, Math.round(Math.log(WORDLIST_SHORT1.length) / Math.log(6)));
     regenBtn.addEventListener('click', regenerate);
     regenerate();
   </script>

@@ -29,17 +29,25 @@ rootCommand.SetAction(parseResult =>
 
     if (wordCount < 1 || wordCount > 20)
     {
-        Console.Error.WriteLine($"Word count must be between 1 and 20.");
+        Console.Error.WriteLine("Word count must be between 1 and 20.");
+        Environment.ExitCode = 1;
         return;
     }
 
-    string[] wordList = list?.ToLowerInvariant() switch
+    string[]? wordList = list?.ToLowerInvariant() switch
     {
         "short1" => WordListShort1.Words,
         "short2" => WordListShort2.Words,
         "large"  => WordListLarge.Words,
-        _ => WordListShort1.Words,
+        _ => null,
     };
+
+    if (wordList is null)
+    {
+        Console.Error.WriteLine("Word list must be short1, short2, or large.");
+        Environment.ExitCode = 1;
+        return;
+    }
 
     var words = new List<string>();
     for (var i = 0; i < wordCount; i++)
@@ -60,7 +68,7 @@ rootCommand.SetAction(parseResult =>
             Console.ForegroundColor = colors[(i / 2) % colors.Length];
             Console.Write(words[i]);
             Console.ResetColor();
-            Console.Write(i < words.Count - 1 ? " " : "");
+            if (i < words.Count - 1) Console.Write(' ');
         }
         Console.WriteLine();
     }
