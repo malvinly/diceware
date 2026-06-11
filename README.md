@@ -47,7 +47,7 @@ Diceware -w 8 -l large        # 8 words, large list
 Diceware -w 10 --no-colors    # 10 words, plain output
 ```
 
-## Website
+## GitHub Pages
 
 https://malvinly.github.io/diceware
 
