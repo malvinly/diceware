@@ -21,6 +21,10 @@ entropy = log2(list_size) × word_count
 | 6 | 62.0 bits | 77.5 bits |
 | 7 | 72.4 bits | 90.5 bits |
 | 8 | 82.7 bits | 103.4 bits |
+| 9 | 93.1 bits | 116.3 bits |
+| 10 | 103.4 bits | 129.2 bits |
+| 11 | 113.7 bits | 142.1 bits |
+| 12 | 124.1 bits | 155.0 bits |
 
 - 6 short words (~62 bits): stronger than any realistically memorable password
 - 7 short words (~72 bits): beyond feasible brute-force
@@ -33,23 +37,19 @@ Diceware [options]
 
 | Option | Description |
 |--------|-------------|
-| `-w, --words` | Word count (1-20, default 6) |
+| `-w, --words` | Word count (1-20, default 8) |
 | `-l, --list` | Word list: `short1`, `short2`, `large` (default `short1`) |
 | `--no-colors` | Plain text output |
 
 ```sh
-Diceware                      # 6 words, short1
+Diceware                      # 8 words, short1
 Diceware -w 8 -l large        # 8 words, large list
 Diceware -w 10 --no-colors    # 10 words, plain output
 ```
 
 ## Website
 
-Static HTML in `docs/`. Hardcoded to 6 words from the short1 list (~62 bits). Open `docs/index.html` or serve:
-
-```sh
-npx serve docs
-```
+https://malvinly.github.io/diceware
 
 ## Word lists
 

@@ -5,7 +5,7 @@ using System.Security.Cryptography;
 var wordsOption = new Option<int>("--words", ["-w"])
 {
     Description = "Number of words in the passphrase",
-    DefaultValueFactory = _ => 6,
+    DefaultValueFactory = _ => 8,
 };
 
 var listOption = new Option<string>("--list", ["-l"])
